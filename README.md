@@ -1,5 +1,7 @@
 # django-supermigrate
 
+[![PyPI version](https://badge.fury.io/py/django-supermigrate.svg)](https://badge.fury.io/py/django-supermigrate)
+
 django-supermigrate is a package to manage migrations on production and development environment with no hassle.
 
 ##Idea

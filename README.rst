@@ -1,6 +1,6 @@
-===========
+===================
 Django Supermigrate
-===========
+===================
 
 Djang Supermigrate is a package to manage migrations on production and development environment with no hassle.
 
