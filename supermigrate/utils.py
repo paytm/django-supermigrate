@@ -1,14 +1,19 @@
 from django.core.management.base import CommandError
 from django.conf import settings
 
-def is_migrate_allowed(app_label):
+def is_migrate_allowed(db):
 
     '''
+    first check for ALLOW_DB_MIGRATE mapping, if this is having True for 
+    current database,  then return True
     If settings is having ALLOW_MIGRATE_FALSE flag and its value is false,
     then return false, else return none.
     dev settings has no such flag, hence will return None in that case
     live setting has this flag as `False` hence will return False
     '''
+
+    if hasattr(settings, 'ALLOW_DB_MIGRATE') and db in settings.ALLOW_DB_MIGRATE:
+        return settings.ALLOW_DB_MIGRATE[db]
 
     if hasattr(settings, 'ALLOW_MIGRATE_FALSE') and settings.ALLOW_MIGRATE_FALSE == False:
         return False
