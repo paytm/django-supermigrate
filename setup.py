@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 
 setup(
     name='django-supermigrate',
-    version='0.1',
+    version='0.3',
     packages=find_packages(),
     include_package_data=True,
     license='MIT License',
