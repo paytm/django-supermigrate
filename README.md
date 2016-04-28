@@ -41,7 +41,7 @@ So how did we solve this problem?
 
 ##Solution
 
-On looking deeper into the code, we first found out that there is a database router, which specifies database that will be used for reading, writing, allowing relation and __migrations__ corresponding to an app or model. The interesting function here is `allow_migrate` which takes db, app_label and model_name as argument. This allow_migrate is called for each model in each app. It checks whether on the given database, for a particular model in an app, are the migrations allowed to run? The more interesting thing is that it is not resolved once, infact it is resolved for each and every model in `INSTALLED_APPS`. So If somehow we can hook some checks in the `allow_migrate` which takes value its value from settings, then our problem will be solved.
+On looking deeper into the code, we first found out that there is a database router, which specifies database that will be used for reading, writing, allowing relation and __migrations__ corresponding to an app or model. The interesting function here is `allow_migrate` which takes db, app_label and model_name as argument. This allow_migrate is called for each model in each app. It checks whether on the given database, for a particular model in an app, are the migrations allowed to run? The more interesting thing is that it is not resolved once, infact it is resolved for each and every model in `INSTALLED_APPS`. So If somehow we can hook some checks in the `allow_migrate` which takes its value from settings, then our problem will be solved.
 
 So we decided that for each model, we will keep its managed flag as __True__. There will be a flag in dev and live settings, which will specify whether the migrations should be allowed to run or not. On development, tables will be created by Django and on production, no migrations will be run as `allow_migrate` will return __False__ over there.
 
@@ -199,5 +199,42 @@ def allow_migrate(self, db, app_label, model=None, **hints):
         return db == settings.DATABASE_ROUTER_MAPPING[app_label]
 
     return None
+
+```
+
+Considering our settings are split across base, dev and live, the following should be there in settings
+
+__base.py__
+```
+DATABASE_ROUTER_MAPPING = {
+    # default db
+    "admin" : "default",
+    "auth" : "default",
+    "contenttypes" : "default",
+    "sites" : "default",
+    "sessions" : "default",
+
+    # book_store db
+    "book": "book_store"
+
+    # etc
+}
+
+DATABASE_ROUTERS  = [ 'supermigrate.database_routers.default.DefaultRouter', ]
+
+```
+
+__settings_dev.py__
+```
+# nothing here as we want migrations to run
+```
+
+__settings_live.py__
+```
+ALLOW_MIGRATE_FALSE = False
+
+ALLOW_DB_MIGRATE = {
+    'default': True
+}
 
 ```
