@@ -4,9 +4,11 @@ from setuptools import setup, find_packages
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     README = readme.read()
 
+VERSION = __import__("supermigrate").__version__
+
 setup(
     name='django-supermigrate',
-    version='0.4',
+    version=VERSION,
     packages=find_packages(),
     include_package_data=True,
     license='MIT License',
