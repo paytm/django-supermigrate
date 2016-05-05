@@ -30,7 +30,7 @@ class DefaultRouter(object):
             if it is false, return false
             if it is None, means it is dev environment
         '''
-        managed_flag = is_migrate_allowed(app_label.upper())
+        managed_flag = is_migrate_allowed(db)
         if managed_flag == False:
             return False
 
