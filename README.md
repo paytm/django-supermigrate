@@ -4,6 +4,66 @@
 
 django-supermigrate is a package to manage migrations on production and development environment with no hassle.
 
+## Installation
+
+* Install it through pip
+
+```
+pip install django-supermigrate
+```
+
+* Download and install manually
+
+```
+git clone https://github.com/paytm/django-supermigrate.git
+cd django-supermigrate
+python setup.py install
+```
+
+## Use
+
+1. Add "supermigrate" to your INSTALLED_APPS like this::
+
+    ```
+    INSTALLED_APPS = (
+        ...
+        'supermigrate',
+    )
+    ```
+
+2. Modify your DATABASE_ROUTERS to include 'default' router like this::
+
+    ```
+    DATABASE_ROUTERS  = [ 'supermigrate.database_routers.default.DefaultRouter', ]
+    ```
+
+3. Add DATABASE_ROUTER_MAPPING in settings like this::
+
+    ```
+        DATABASE_ROUTER_MAPPING = {
+
+            # default db
+            "admin" : "default",
+            "auth" : "default",
+            "contenttypes" : "default",
+            "sites" : "default",
+            "sessions" : "default",
+
+            # other db here
+
+        }
+    ```
+
+4. Update settings for live with ::
+
+    ```
+    ALLOW_MIGRATE_FALSE = False
+
+    ALLOW_DB_MIGRATE = {
+        'default': True
+    }
+    ```
+
 ##Idea
 
 The main idea behind this project is to manage migration __simultaneously__ on development and production environment. The convention is, on __development__ environment, Django should be able to __run__ the migrations and hence the changes should be reflected in the database, whereas on production, the migrations should __not__ be allowed to run, hence they should not create any table on production. They should just create the __associated content types__ and the __permission__ and all the changes on the production, be it any create table or any alter, should go through the DBA.
@@ -35,7 +95,7 @@ MANAGED_FLAG = False
 This worked for a while, but soon we realized that it was helpful in no way.
 For each change in model, a migration file is created which remains same across the development and production environment. Now the above `if` in the managed flag works, but this is resolved only once when the `makemigrations` command is run. So if we create the migration on the development environment, then managed will be True in the generated migration file, but this will be True for production environment also. It can be dangerous if anyone runs by mistake migrations on the production.
 
-One solution can be to run __makemigrations__ on production, using __settings_live__, and hence `managed` flag will be __False__. But that is highly __discouraged__. 
+One solution can be to run __makemigrations__ on production, using __settings_live__, and hence `managed` flag will be __False__. But that is highly __discouraged__.
 Another solution for this can be to keep separate value on `master` and `production` branch. But that becomes very messy to manage.
 
 
