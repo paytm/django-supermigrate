@@ -28,11 +28,16 @@ Quick start
         DATABASE_ROUTER_MAPPING = {
 
             # default db
-            "admin" : "default",
-            "auth" : "default",
-            "contenttypes" : "default",
-            "sites" : "default",
-            "sessions" : "default",
+            "admin" : {
+                "DB_FOR_READ": "default_slave",
+                "DB_FOR_WRITE": "default",
+                "DB_FOR_MIGRATE": ["default", "default_slave"]
+            },
+            "auth" : {
+                "DB_FOR_READ": "default",
+                "DB_FOR_WRITE": "default",
+                "DB_FOR_MIGRATE": ["default", "default_slave"]
+            }
 
             # other db here
 
