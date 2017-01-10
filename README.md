@@ -43,16 +43,25 @@ python setup.py install
         DATABASE_ROUTER_MAPPING = {
 
             # default db
-            "admin" : "default",
-            "auth" : "default",
-            "contenttypes" : "default",
-            "sites" : "default",
-            "sessions" : "default",
+            "admin" : {
+                "DB_FOR_READ": "default_slave",
+                "DB_FOR_WRITE": "default",
+                "DB_FOR_MIGRATE": ["default", "default_slave"]
+            },
+            "auth" : {
+                "DB_FOR_READ": "default",
+                "DB_FOR_WRITE": "default",
+                "DB_FOR_MIGRATE": ["default", "default_slave"]
+            },
+
 
             # other db here
 
         }
     ```
+
+`DB_FOR_READ` signifies the db that will be used for read queries. `DB_FOR_WRITE` signifies the database that will be used for write queries. `DB_FOR_MIGRATE` is a list and can contain any databasea(master and slave, for development generally)
+
 
 4. Update settings for live with ::
 
@@ -107,20 +116,24 @@ On looking deeper into the code, we first found out that there is a database rou
 
 So we decided that for each model, we will keep its managed flag as __True__. There will be a flag in dev and live settings, which will specify whether the migrations should be allowed to run or not. On development, tables will be created by Django and on production, no migrations will be run as `allow_migrate` will return __False__ over there.
 
-The first step in solving this problem was writing a __generic database router__ which takes a required mapping from settings, __DATABASE_ROUTER_MAPPING__. This is a mapping of app is to database, and it is necessary to specify database for every app, else it will not allow  migrations to run. It looks like,
+The first step in solving this problem was writing a __generic database router__ which takes a required mapping from settings, __DATABASE_ROUTER_MAPPING__. This is a mapping of app is to database, and it is necessary to specify database for every app, else it will not allow  migrations to run. To make it more generic and honour `master-slave` configuration, it takes three keys namely `DB_FOR_READ`, `DB_FOR_WRITE` and `DB_FOR_MIGRATE`. It looks like,
 
 ```
 DATABASE_ROUTER_MAPPING = {
 
     # default db
-    "admin" : "default",
-    "auth" : "default",
-    "contenttypes" : "default",
-    "sites" : "default",
-    "sessions" : "default",
+    "admin" : {
+        "DB_FOR_READ": "default",
+        "DB_FOR_WRITE": "default_slave",
+        "DB_FOR_MIGRATE": ["default", "default_slave"]
+    }
 
     # book_store db
-    "book": "book_store"
+    "book": {
+        "DB_FOR_READ": "book_store",
+        "DB_FOR_WRITE": "book_store_slave",
+        "DB_FOR_MIGRATE": ["book_store", "book_store_slave"]
+    }
 }
 ```
 
@@ -182,7 +195,7 @@ def allow_migrate(self, db, app_label, model=None, **hints):
         return False
 
     if is_database_connection_in_settings(app_label):
-        return db == settings.DATABASE_ROUTER_MAPPING[app_label]
+        return db in settings.DATABASE_ROUTER_MAPPING[app_label]
 
     return None
 
@@ -258,7 +271,7 @@ def allow_migrate(self, db, app_label, model=None, **hints):
         return False
 
     if is_database_connection_in_settings(app_label):
-        return db == settings.DATABASE_ROUTER_MAPPING[app_label]
+        return db in settings.DATABASE_ROUTER_MAPPING[app_label]
 
     return None
 
@@ -270,14 +283,18 @@ __base.py__
 ```
 DATABASE_ROUTER_MAPPING = {
     # default db
-    "admin" : "default",
-    "auth" : "default",
-    "contenttypes" : "default",
-    "sites" : "default",
-    "sessions" : "default",
+    "admin" : {
+        "DB_FOR_READ": "default",
+        "DB_FOR_WRITE": "default_slave",
+        "DB_FOR_MIGRATE": ["default", "default_slave"]
+    },
 
     # book_store db
-    "book": "book_store"
+    "book": {
+        "DB_FOR_READ": "book_store",
+        "DB_FOR_WRITE": "book_store_slave",
+        "DB_FOR_MIGRATE": ["book_store", "book_store_slave"]
+    }
 
     # etc
 }
