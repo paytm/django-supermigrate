@@ -11,12 +11,12 @@ class DefaultRouter(object):
 
     def db_for_read(self, model, **hints):
         if is_database_connection_in_settings(model._meta.app_label):
-            return settings.DATABASE_ROUTER_MAPPING[model._meta.app_label]
+            return settings.DATABASE_ROUTER_MAPPING[model._meta.app_label]['DB_FOR_READ']
         return None
 
     def db_for_write(self, model, **hints):
         if is_database_connection_in_settings(model._meta.app_label):
-            return settings.DATABASE_ROUTER_MAPPING[model._meta.app_label]
+            return settings.DATABASE_ROUTER_MAPPING[model._meta.app_label]['DB_FOR_WRITE']
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -35,6 +35,6 @@ class DefaultRouter(object):
             return False
 
         if is_database_connection_in_settings(app_label):
-            return db == settings.DATABASE_ROUTER_MAPPING[app_label]
+            return db in settings.DATABASE_ROUTER_MAPPING[app_label]['DB_FOR_MIGRATE']
 
         return None
